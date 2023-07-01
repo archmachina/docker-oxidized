@@ -69,7 +69,7 @@ while [ "$1" != "" ] ; do
       [ "${SEMVER_PRERELEASE}" != "" ] && GITHUB_PRERELEASE='true'
 
       assert github_release -o "${GITHUB_OWNER}" -r "${GITHUB_REPO}" -t "${VERSION}" -d false \
-        -p "${GITHUB_PRERELEASE}" -n "Version ${VERSION}"
+        -p "${GITHUB_PRERELEASE}" -n "Version ${VERSION}" -a "${GITHUB_TOKEN}"
   esac
 done
 
