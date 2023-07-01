@@ -37,6 +37,10 @@ while [ "$1" != "" ] ; do
       [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}"
       [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}"
 
+      # oxidized specific - capture source tag
+      OXIDIZED_TAG=$(assert sed -ne 's/^FROM oxidized\/oxidized:\(.*\)$/\1/p' source/Dockerfile | head -1)
+      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}+${OXIDIZED_TAG}"
+
       # Push each tag
       for TAG in "$TAG_VERSIONS" ; do
         assert docker tag "${IMAGE}" "${DOCKER_IMAGE}:${TAG}"
