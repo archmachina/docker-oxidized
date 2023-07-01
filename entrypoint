@@ -32,17 +32,23 @@ while [ "$1" != "" ] ; do
 
       # Determine tag versions
       VERSION=$(get_semver_match < <(echo "$VERSION_SOURCES"))
-      [ "$VERSION" != "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_FULL}"
-      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}"
-      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}"
-      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}"
+      if [ "$VERSION" != "" ] ; then
+        assert semver_extract "$VERSION"
 
-      # oxidized specific - capture source tag
-      OXIDIZED_TAG=$(assert sed -ne 's/^FROM oxidized\/oxidized:\(.*\)$/\1/p' source/Dockerfile | head -1)
-      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}+${OXIDIZED_TAG}"
+        TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_FULL}"
+        [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}"
+        [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}"
+        # [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}"
 
+        # oxidized specific - capture source tag
+        OXIDIZED_TAG=$(assert sed -ne 's/^FROM oxidized\/oxidized:\(.*\)$/\1/p' source/Dockerfile | head -1)
+        [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}+${OXIDIZED_TAG}"
+      fi
+
+      echo "TAG_VERSIONS: $TAG_VERSIONS"
       # Push each tag
-      for TAG in "$TAG_VERSIONS" ; do
+      for TAG in $TAG_VERSIONS ; do
+        [ "$TAG" == "" ] && continue
         assert docker tag "${IMAGE}" "${DOCKER_IMAGE}:${TAG}"
         assert docker push "${DOCKER_IMAGE}:${TAG}"
       done
