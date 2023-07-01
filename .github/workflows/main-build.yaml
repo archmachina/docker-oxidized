@@ -1,14 +1,15 @@
 ---
 
-name: release
+name: main
 on:
+  workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
 jobs:
-  release:
-    name: "release"
+  build:
+    name: "build"
     runs-on: ubuntu-latest
 
     steps:
@@ -17,11 +18,11 @@ jobs:
         with:
           submodules: true
 
-      - name: release
+      - name: build
         shell: bash
         run: |
           ./entrypoint build push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-          TAG_VERSIONS: "latest"
+          TAG_VERSIONS: "main"

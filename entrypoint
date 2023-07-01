@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Global settings
+set -o pipefail
+SCRIPT_PATH=$(readlink -f "$0")
+SCRIPT_DIR=$(dirname "${SCRIPT_PATH}")
+VERSION_SOURCES="
+$GITHUB_REF
+"
+DOCKER_IMAGE="archmachina/oxidized"
+DOCKER_USERNAME="archmachina"
+DOCKER_HOST="docker.io"
+
+. "${SCRIPT_DIR}/exec/exec_functions"
+
+while [ "$1" != "" ] ; do
+
+  COMMAND="$1"
+  shift
+
+  case "$COMMAND" in
+    build)
+      IMAGE=$(assert docker build -f ./source/Dockerfile -q ./source)
+      echo $IMAGE
+      ;;
+
+    push)
+      assert [ "$IMAGE" != "" ]
+
+      # Log in using supplied token
+      assert docker login --password-stdin -u archmachina docker.io < <(echo "${DOCKER_TOKEN}")
+
+      # Determine tag versions
+      VERSION=$(get_semver_match < <(echo "$VERSION_SOURCES"))
+      [ "$VERSION" != "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_FULL}"
+      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}"
+      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}"
+      [ "$VERSION" != "" ] && [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}"
+
+      # Push each tag
+      for TAG in "$TAG_VERSIONS" ; do
+        assert docker tag "${IMAGE}" "${DOCKER_IMAGE}:${TAG}"
+        assert docker push "${DOCKER_IMAGE}:${TAG}"
+      done
+      ;;
+  esac
+done
+
+exit 0
