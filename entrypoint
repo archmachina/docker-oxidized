@@ -12,7 +12,7 @@ DOCKER_USERNAME="archmachina"
 DOCKER_HOST="docker.io"
 
 GITHUB_OWNER=archmachina
-GITHUB_REPO=oxidized
+GITHUB_REPO=docker-oxidized
 
 
 . "${SCRIPT_DIR}/exec/exec_functions"
