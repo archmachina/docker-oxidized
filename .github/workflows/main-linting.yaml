@@ -1,6 +1,6 @@
 ---
 
-name: main
+name: main-linting
 on:
   workflow_dispatch:
   push:

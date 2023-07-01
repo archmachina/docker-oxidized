@@ -1,6 +1,6 @@
 ---
 
-name: main
+name: main-build
 on:
   workflow_dispatch:
   push:
