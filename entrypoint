@@ -11,6 +11,10 @@ DOCKER_IMAGE="archmachina/oxidized"
 DOCKER_USERNAME="archmachina"
 DOCKER_HOST="docker.io"
 
+GITHUB_OWNER=archmachina
+GITHUB_REPO=oxidized
+
+
 . "${SCRIPT_DIR}/exec/exec_functions"
 
 while [ "$1" != "" ] ; do
@@ -52,6 +56,20 @@ while [ "$1" != "" ] ; do
         assert docker push "${DOCKER_IMAGE}:${TAG}"
       done
       ;;
+
+    release)
+      # Determine tag versions
+      VERSION=$(get_semver_match < <(echo "$VERSION_SOURCES"))
+      assert [ "$VERSION" != "" ]
+
+      # Remove leading refs/tags/
+      VERSION="${VERSION#refs/tags/}"
+
+      GITHUB_PRERELEASE='false'
+      [ "${SEMVER_PRERELEASE}" != "" ] && GITHUB_PRERELEASE='true'
+
+      assert github_release -o "${GITHUB_OWNER}" -r "${GITHUB_REPO}" -t "${VERSION}" -d false \
+        -p "${GITHUB_PRERELEASE}" -n "Version ${VERSION}"
   esac
 done
 
