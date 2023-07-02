@@ -14,7 +14,6 @@ DOCKER_HOST="docker.io"
 GITHUB_OWNER=archmachina
 GITHUB_REPO=docker-oxidized
 
-
 . "${SCRIPT_DIR}/exec/exec_functions"
 
 while [ "$1" != "" ] ; do
@@ -29,15 +28,17 @@ while [ "$1" != "" ] ; do
       ;;
 
     push)
-      assert [ "$IMAGE" != "" ]
+      assert_msg image_check [ "$IMAGE" != "" ]
 
       # Log in using supplied token
       assert docker login --password-stdin -u "${DOCKER_USERNAME}" "${DOCKER_HOST}" < <(echo "${DOCKER_TOKEN}")
 
       # Determine tag versions
+      echo "Version Sources: $VERSION_SOURCES"
       VERSION=$(get_semver_match < <(echo "$VERSION_SOURCES"))
-      if [ "$VERSION" != "" ] ; then
-        assert semver_extract "$VERSION"
+      if [ "$VERSION" != "" ]; then
+        assert semver_extract "${VERSION}"
+        assert_msg semver_full [ "$SEMVER_FULL" != "" ]
 
         # oxidized specific - capture source tag
         OXIDIZED_TAG=$(assert sed -ne 's/^FROM oxidized\/oxidized:\(.*\)$/\1/p' source/Dockerfile | head -1)
@@ -48,7 +49,7 @@ while [ "$1" != "" ] ; do
         [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}"
       fi
 
-      echo "TAG_VERSIONS: $TAG_VERSIONS"
+      echo "Tag Versions: $TAG_VERSIONS"
       # Push each tag
       for TAG in $TAG_VERSIONS ; do
         [ "$TAG" == "" ] && continue
@@ -59,8 +60,12 @@ while [ "$1" != "" ] ; do
 
     release)
       # Determine tag versions
+      echo "Version Sources: $VERSION_SOURCES"
       VERSION=$(get_semver_match < <(echo "$VERSION_SOURCES"))
-      assert [ "$VERSION" != "" ]
+      assert semver_extract "${VERSION}"
+
+      assert_msg version [ "$VERSION" != "" ]
+      assert_msg semver_full [ "$SEMVER_FULL" != "" ]
 
       # Remove leading refs/tags/
       VERSION="${VERSION#refs/tags/}"
