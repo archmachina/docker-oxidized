@@ -5,11 +5,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update -yq && apt install -yq ruby ruby-dev libsqlite3-dev libssl-dev pkg-config cmake \
   libssh2-1-dev libicu-dev zlib1g-dev g++ libyaml-dev ruby-bundler make
 
-RUN mkdir /data && chmod 777 /data
-WORKDIR /data
-ENV HOME /data
+RUN mkdir /work && chmod 777 /work
+WORKDIR /work
+ENV HOME /work
 
-COPY Gemfile /data
+COPY Gemfile /work
 RUN bundle install
 
 COPY entrypoint /entrypoint
