@@ -12,4 +12,4 @@ WORKDIR /data
 
 RUN bundle install
 
-ENTRYPOINT [ '/usr/local/bin/oxidized' ]
+ENTRYPOINT [ "/usr/local/bin/oxidized" ]
