@@ -1,6 +1,15 @@
-FROM oxidized/oxidized:0.29.1-8-g43c4420
+FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt install -yq make
-RUN gem install -v 3.3.2 psych
+RUN apt update -yq && apt install -yq ruby ruby-dev libsqlite3-dev libssl-dev pkg-config cmake \
+  libssh2-1-dev libicu-dev zlib1g-dev g++ libyaml-dev ruby-bundler make
+
+RUN mkdir /data
+COPY Gemfile /data
+
+WORKDIR /data
+
+RUN bundle install
+
+ENTRYPOINT [ '/usr/local/bin/oxidized' ]

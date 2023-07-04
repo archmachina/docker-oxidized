@@ -40,13 +40,11 @@ while [ "$1" != "" ] ; do
         assert semver_extract "${VERSION}"
         assert_msg semver_full [ "$SEMVER_FULL" != "" ]
 
-        # oxidized specific - capture source tag
-        OXIDIZED_TAG=$(assert sed -ne 's/^FROM oxidized\/oxidized:\(.*\)$/\1/p' source/Dockerfile | head -1)
-
         SEMVER_FULL=${SEMVER_FULL//+/_/}
-        TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_FULL}-${OXIDIZED_TAG}"
+        TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_FULL}"
         [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}"
         [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}"
+        [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}"
       fi
 
       echo "Tag Versions: $TAG_VERSIONS"
