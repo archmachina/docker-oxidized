@@ -6,10 +6,12 @@ RUN apt update -yq && apt install -yq ruby ruby-dev libsqlite3-dev libssl-dev pk
   libssh2-1-dev libicu-dev zlib1g-dev g++ libyaml-dev ruby-bundler make
 
 RUN mkdir /data
-COPY Gemfile /data
-
 WORKDIR /data
+ENV HOME /data
 
+COPY Gemfile /data
 RUN bundle install
 
-ENTRYPOINT [ "/usr/local/bin/oxidized" ]
+COPY entrypoint /entrypoint
+
+ENTRYPOINT [ "/entrypoint" ]
