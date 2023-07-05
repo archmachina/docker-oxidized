@@ -1,9 +1,76 @@
 #!/bin/bash
 
-OXIDIZED_ROOT="$HOME/.config/oxidized"
-SOURCE_CONFIG="$HOME/config"
-CONFIG_FILE="$OXIDIZED_ROOT/config"
-LOCK_FILE=/tmp/entrypoint_lock
+function wrapper() {
+  echo "Calling wrapper"
+  exec /wrapper
+  echo "Failed in call to wrapper"
+  exit 1
+}
+
+# Current user and group ids
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+
+# Allow override of the user we'll run as. Default to root
+PUID="${PUID:-0}"
+PGID="${PGID:-0}"
+
+# Check if we could do any user management
+if [ "$USER_ID" != "0" ] ; then
+  # Nothing we can do with user management as we're already another user. Just
+  # call the wrapper
+  echo "Already another user ${USER_ID}:${GROUP_ID}"
+  wrapper
+  exit 1
+fi
+
+# Check if we're already the correct user and group
+if [ "$USER_ID" == "$PUID" ] && [ "$GROUP_ID" == "$PGID" ] ; then
+  echo "Already target user and group ${PUID}:${PGID}"
+  wrapper
+  exit 1
+fi
+
+if [ "$USER_ID" != "$PUID" ] ; then
+fi
+
+# We're the root user and either the user id or group id is incorrect
+# Make sure the user and group entries exist
+echo "Adding oxidized group with GID $PGID"
+if ! groupadd -g "$PGID" -o oxidized ; then
+  echo "Could not create group"
+  exit 1
+fi
+echo "Group Entity: $(getent group oxidized)"
+
+echo "Adding oxidized user with UID $PUID"
+if ! useradd -u "${PUID}" -g "${PGID}" -M -d $HOME oxidized ; then
+  echo "Could not create user"
+  exit 1
+fi
+echo "User Entity: $(getent user oxidized)"
+
+# Create the group, if it doesn't exist
+if ! id -gn > /dev/null 2>&1 ; then
+  echo "Group does not have a passwd entry"
+  echo "Creating user account for current ID: ${USER_ID}:${GROUP_ID}"
+  if ! groupadd -g "$GROUP_ID" oxidized ; then
+    echo "Could not create group"
+    exit 1
+  fi
+  echo "User Entity: $(getent group oxidized)"
+fi
+
+if ! id -un > /dev/null 2>&1 ; then
+  echo "User does not have a passwd entry"
+  echo "Creating user account for current ID: ${USER_ID}:${GROUP_ID}"
+  if ! useradd -u "$USER_ID" -g "$GROUP_ID" -M -d $HOME oxidized ; then
+    echo "Could not create user account"
+    exit 1
+  fi
+  echo "User Entity: $(getent passwd oxidized)"
+fi
+
 
 # Create the oxidized directory
 echo "Creating oxidized root: $OXIDIZED_ROOT"
