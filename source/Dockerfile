@@ -8,6 +8,7 @@ RUN apt update -yq && apt install -yq ruby ruby-dev libsqlite3-dev libssl-dev pk
 RUN mkdir /work && chmod 777 /work
 WORKDIR /work
 ENV HOME /work
+ENV PID_FILE /work/pid
 
 COPY Gemfile /work
 RUN bundle install

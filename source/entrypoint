@@ -3,6 +3,7 @@
 OXIDIZED_ROOT="$HOME/.config/oxidized"
 SOURCE_CONFIG="$HOME/config"
 CONFIG_FILE="$OXIDIZED_ROOT/config"
+LOCK_FILE=/tmp/entrypoint_lock
 
 # Create the oxidized directory
 echo "Creating oxidized root: $OXIDIZED_ROOT"
@@ -11,7 +12,29 @@ if ! mkdir -p "$OXIDIZED_ROOT" ; then
   exit 1
 fi
 
+# Attempt exclusive lock before continuing
+echo "Attempting exclusive lock on file: $LOCK_FILE"
+exec 4> "$LOCK_FILE"
+if ! flock -w 5 -x 4 ; then
+  echo "Could not get exclusive lock on $LOCK_FILE"
+  exit 1
+else
+  echo "Exclusive lock successful"
+fi
+
+# Remove the existing PID file
+echo "Removing PID file: $PID_FILE"
+if [ "$PID_FILE" != "" ] && [ -f "$PID_FILE" ] ; then
+  if ! rm -f "$PID_FILE" ; then
+    echo "Could not remove pid file: $PID_FILE"
+    exit 1
+  fi
+else
+  echo "PID file ($PID_FILE) not found"
+fi
+
 # Copy the source configuration, if present
+echo "Checking for config source: $SOURCE_CONFIG"
 if [ -f "$SOURCE_CONFIG" ] ; then
   echo "Config found in $SOURCE_CONFIG"
   if ! cp "$SOURCE_CONFIG" "$CONFIG_FILE" ; then
