@@ -14,5 +14,6 @@ COPY Gemfile /work
 RUN bundle install
 
 COPY entrypoint /entrypoint
+COPY wrapper /wrapper
 
 ENTRYPOINT [ "/entrypoint" ]

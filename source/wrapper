@@ -1,9 +1,11 @@
 #!/bin/bash
 
+set -o pipefail
+
 OXIDIZED_ROOT="$HOME/.config/oxidized"
 SOURCE_CONFIG="$HOME/config"
 CONFIG_FILE="$OXIDIZED_ROOT/config"
-LOCK_FILE=/tmp/entrypoint_lock
+LOCK_FILE=/tmp/wrapper_lock
 USER_ID=$(id -u)
 GROUP_ID=$(id -g)
 
@@ -22,26 +24,6 @@ if ! flock -w 5 -x 4 ; then
   exit 1
 else
   echo "Exclusive lock successful"
-fi
-
-if ! id -gn > /dev/null 2>&1 ; then
-  echo "Group does not have a passwd entry"
-  echo "Creating user account for current ID: ${USER_ID}:${GROUP_ID}"
-  if ! groupadd -g "$GROUP_ID" oxidized ; then
-    echo "Could not create group"
-    exit 1
-  fi
-  echo "User Entity: $(getent group oxidized)"
-fi
-
-if ! id -un > /dev/null 2>&1 ; then
-  echo "User does not have a passwd entry"
-  echo "Creating user account for current ID: ${USER_ID}:${GROUP_ID}"
-  if ! useradd -u "$USER_ID" -g "$GROUP_ID" -M -d $HOME oxidized ; then
-    echo "Could not create user account"
-    exit 1
-  fi
-  echo "User Entity: $(getent passwd oxidized)"
 fi
 
 # Remove the existing PID file
