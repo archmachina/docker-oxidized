@@ -25,4 +25,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-          TAG_VERSIONS: "main"
+          TAG_VERSIONS: "main latest"

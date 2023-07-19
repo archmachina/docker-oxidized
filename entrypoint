@@ -37,40 +37,54 @@ while [ "$1" != "" ] ; do
       echo "Version Sources: $VERSION_SOURCES"
       VERSION=$(get_semver_match < <(echo "$VERSION_SOURCES"))
       if [ "$VERSION" != "" ]; then
+        # Extract the components of the version
         assert semver_extract "${VERSION}"
+
+        # Make sure we have valid semver information
         assert_msg semver_full [ "$SEMVER_FULL" != "" ]
 
+        # The '+' character isn't valid in a docker tag name, so replace with an
+        # underscore.
         SEMVER_FULL=${SEMVER_FULL//+/_/}
+
+        # Define all of the tags that will apply for this image
         TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_FULL}"
         [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}"
         [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}"
         [ "$SEMVER_PRERELEASE" == "" ] && TAG_VERSIONS="$TAG_VERSIONS ${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}"
       fi
 
-      echo "Tag Versions: $TAG_VERSIONS"
       # Push each tag
+      echo "Tag Versions: $TAG_VERSIONS"
       for TAG in $TAG_VERSIONS ; do
         [ "$TAG" == "" ] && continue
+
+        # Tag and push the image defined earlier
         assert docker tag "${IMAGE}" "${DOCKER_IMAGE}:${TAG}"
         assert docker push "${DOCKER_IMAGE}:${TAG}"
       done
       ;;
 
     release)
-      # Determine tag versions
+      # Determine suitable tag source
       echo "Version Sources: $VERSION_SOURCES"
       VERSION=$(get_semver_match < <(echo "$VERSION_SOURCES"))
+
+      # Extract components of the Semver version
       assert semver_extract "${VERSION}"
 
+      # Make sure we have valid version information
       assert_msg version [ "$VERSION" != "" ]
       assert_msg semver_full [ "$SEMVER_FULL" != "" ]
 
       # Remove leading refs/tags/
       VERSION="${VERSION#refs/tags/}"
 
+      # Determine if this is a prerelease
       GITHUB_PRERELEASE='false'
       [ "${SEMVER_PRERELEASE}" != "" ] && GITHUB_PRERELEASE='true'
 
+      # Create a new release on GitHub
       assert github_release -o "${GITHUB_OWNER}" -r "${GITHUB_REPO}" -t "${VERSION}" -d false \
         -p "${GITHUB_PRERELEASE}" -n "Version ${VERSION}" -a "${GITHUB_TOKEN}" -g
   esac
