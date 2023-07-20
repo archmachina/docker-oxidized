@@ -23,7 +23,6 @@ jobs:
           ./entrypoint build push
         env:
           DOCKER_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-          TAG_VERSIONS: "latest"
 
   release:
     name: "release"

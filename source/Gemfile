@@ -4,7 +4,6 @@ source "https://rubygems.org"
 
 gem "oxidized-web", "0.13.1"
 gem "oxidized", "0.29.1"
-# gem "oxidized-script", "0.6.0"
 gem "psych", "3.3.2"
 gem "net-ssh", "7.1.0"
 gem "net-telnet", "0.2.0"
