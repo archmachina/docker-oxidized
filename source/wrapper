@@ -6,8 +6,6 @@ OXIDIZED_ROOT="$HOME/.config/oxidized"
 SOURCE_CONFIG="$HOME/config"
 CONFIG_FILE="$OXIDIZED_ROOT/config"
 LOCK_FILE=/tmp/wrapper_lock
-USER_ID=$(id -u)
-GROUP_ID=$(id -g)
 
 # Create the oxidized directory
 echo "Creating oxidized root: $OXIDIZED_ROOT"
