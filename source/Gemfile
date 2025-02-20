@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "oxidized-web", "0.13.1"
+gem "oxidized-web", "0.15.1"
 gem "oxidized", "0.29.1"
 gem "psych", "3.3.2"
 gem "net-ssh", "7.1.0"
